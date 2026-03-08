@@ -1,0 +1,7 @@
+Scenario,CO2_Reduction_Pct,Clearing_Price_EUR,Gini_Pre,Gini_Post,Gini_Change,Total_Welfare_Cost_M_EUR,Net_Buyers_Pct,Net_Sellers_Pct,Burden_Q1_Pct,Burden_Q5_Pct
+Scenario 1: Uniform Allocation,10.0%,€210.04,0.3242,0.3211,-0.0030,€1.21M,53.5%,46.5%,-2.47%,0.62%
+Scenario 2: Equity Allocation,10.0%,€210.04,0.3242,0.3162,-0.0080,€1.21M,55.7%,44.3%,-6.73%,1.29%
+Scenario 3: Price Bounds,9.5%,€200.00,0.3242,0.3213,-0.0028,€1.21M,53.9%,46.1%,-2.32%,0.59%
+Scenario 4: Energy Shock,10.0%,€199.54,0.3242,0.3214,-0.0027,€1.10M,53.5%,46.5%,-2.23%,0.56%
+Scenario 5: Flat Carbon Tax,10.0%,€210.04,0.3242,0.3317,0.0076,€23.08M,100.0%,0.0%,8.29%,2.29%
+Scenario 6: Behavioral Intervention,10.0%,€140.03,0.3242,0.3221,-0.0020,€0.81M,53.5%,46.5%,-1.65%,0.41%
