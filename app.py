@@ -116,10 +116,15 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
         # 1.  DISTRIBUTIONAL IMPACT (FIXED: string categories, symmetric colour scale)
         # ═══════════════════════════════════════════════════════════
         st.subheader("📉 Distributional Impact by Income Quintile")
-        st.markdown(
-            "_A **negative** burden % means the quintile made a **net profit** "
-            "from selling surplus allowances. A **positive** burden means they had to "
-            "**buy permits**, raising their costs._"
+
+        st.info(
+            "**Why does Q1 (Lowest Income) show a negative / profit?** \n\n"
+            "Under PCA, every person receives the **same per-capita allowance** regardless of income. "
+            "But low-income households own fewer cars, live in smaller homes, and fly less — so they "
+            "**emit far less CO₂ than their allocation entitles them to**. "
+            "They can therefore **sell their surplus allowances** on the carbon market and receive cash. \n\n"
+            "This is the core progressive feature of PCA: it acts as a **wealth transfer from high to low income households**, "
+            "unlike a flat carbon tax which is regressive (hits the poor hardest)."
         )
 
         burden_by_q = (
@@ -145,12 +150,25 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
         )
         fig_burden.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
         fig_burden.add_hline(y=0, line_dash="dash", line_color="white", line_width=1)
+
+        # Annotate the two sides of the zero line
+        fig_burden.add_annotation(
+            x=0.02, y=1.08, xref="paper", yref="paper",
+            text="⬇ Below zero = NET SELLER (profits from selling surplus allowances)",
+            showarrow=False, font=dict(size=11, color="#34d399"), align="left"
+        )
+        fig_burden.add_annotation(
+            x=0.02, y=1.02, xref="paper", yref="paper",
+            text="⬆ Above zero = NET BUYER (must purchase extra allowances / pay cost)",
+            showarrow=False, font=dict(size=11, color="#f87171"), align="left"
+        )
         fig_burden.update_layout(
-            xaxis_title="Income Quintile (1 = Lowest Income, 5 = Highest Income)",
-            yaxis_title="Average Net Cost Burden (% of Income)",
+            xaxis_title="Income Quintile — ordered lowest to highest income",
+            yaxis_title="Average Net Cost Burden (% of Household Income)",
             coloraxis_showscale=True,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
+            margin=dict(t=80),
         )
         st.plotly_chart(fig_burden, use_container_width=True)
 
