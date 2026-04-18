@@ -47,7 +47,7 @@ def run_scenarios(num_households=5000, target_reduction=0.10):
     m5 = PCASimulation(num_households=num_households, random_seed=42)
     m5.generate_households()
     equiv_tax = res1['Clearing_Price_EUR']
-    m5.allocate_allowances(method='uniform', cap_reduction=target_reduction) # just sets cap target for metric but unused
+    m5.allocate_allowances(method='uniform', cap_reduction=target_reduction)  # sets model.cap for comparison metrics
     m5.simulate_market(carbon_tax=equiv_tax)
     res5 = analyze_results(m5, "Scenario 5: Flat Carbon Tax")
     results.append(res5)

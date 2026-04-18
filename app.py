@@ -106,8 +106,11 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
             delta_color="inverse",
         )
         col4.metric(
-            "Total Economy-Wide Welfare Cost",
+            "Aggregate Abatement Cost",
             f"€{results['Total_Welfare_Cost_M_EUR']:.2f}M",
+            help="Sum of all households' abatement costs net of trading revenues. "
+                 "In a clearing market, buyer–seller transfers cancel and this "
+                 "equals the true deadweight cost of compliance.",
         )
 
         st.markdown("---")
@@ -216,7 +219,7 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
         colA, colB = st.columns(2)
 
         with colA:
-            if carbon_tax:
+            if carbon_tax is not None:
                 st.info(
                     "**Carbon Tax:** All households pay a flat rate per tonne of emissions. "
                     "There is no trading — every household is a net buyer."

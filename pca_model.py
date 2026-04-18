@@ -105,46 +105,100 @@ class PCASimulation:
     def apply_shock(self, shock_type=None):
         """Applies external shocks like energy price increases or behavioral nudges."""
         if shock_type == 'energy_price_surge':
-            # Energy is more expensive, they abate more naturally without carbon price
-            # We simulate this by reducing their baseline emissions by 5%
+            # A 5% autonomous reduction in baseline emissions (e.g. fuel price surge
+            # already prompting behaviour change before any carbon policy).
+            # IMPORTANT: alpha must also be recalculated because it is proportional
+            # to baseline_emissions — otherwise the abatement curve is mis-calibrated.
             self.agents['baseline_emissions'] *= 0.95
-            
+            self.agents['alpha'] = (
+                self.agents['baseline_emissions']
+                * self.agents['elasticity']
+                * 0.0018   # consistent with generate_households calibration
+            )
+
         elif shock_type == 'behavioral_nudge':
-            # Weekly feedback increases compliance and elasticity
-            self.agents['elasticity'] = np.clip(self.agents['elasticity'] * 1.5, 0.1, 0.8)
-            self.agents['alpha'] = self.agents['baseline_emissions'] * self.agents['elasticity'] * 0.002
+            # Weekly carbon-footprint feedback boosts price responsiveness.
+            # Elasticity is clipped at 0.80 (hard physical limit — you can't reduce
+            # energy use to zero).  Use the SAME alpha constant (0.0018) as
+            # generate_households so the abatement function stays consistent.
+            self.agents['elasticity'] = np.clip(
+                self.agents['elasticity'] * 1.5, 0.10, 0.80
+            )
+            self.agents['alpha'] = (
+                self.agents['baseline_emissions']
+                * self.agents['elasticity']
+                * 0.0018
+            )
 
     def simulate_market(self, price_floor=None, price_ceiling=None, carbon_tax=None):
         """
-        Finds the market clearing price where Total Abatement = Baseline - Cap.
-        Or applies a fixed carbon tax.
+        Finds the market-clearing carbon price such that aggregate abatement
+        exactly meets the required emissions reduction (Baseline − Cap).
+
+        The aggregate abatement function is linear: A_total(P) = sum(alpha_i) * P
+        subject to each household's abatement being capped at 90 % of their
+        baseline (technological feasibility limit).  We therefore solve
+        iteratively rather than analytically to guarantee clearing accuracy
+        when the cap is binding for some agents.
+
         Returns the clearing price.
         """
         if carbon_tax is not None:
-            # Fixed price, no cap constraint
-            P = carbon_tax
+            # Fixed price instrument — no quantity cap is enforced.
+            P = float(carbon_tax)
         else:
-            # Market clearing: sum(alpha_i * P) = sum(E0_i) - Cap
-            # P = (sum(E0_i) - Cap) / sum(alpha_i)
-            required_abatement = self.agents['baseline_emissions'].sum() - self.cap
+            required_abatement = (
+                self.agents['baseline_emissions'].sum() - self.cap
+            )
             if required_abatement <= 0:
-                P = 0
+                P = 0.0
             else:
-                total_alpha = self.agents['alpha'].sum()
-                P = required_abatement / total_alpha
-                
-            # Apply bounds
+                # ── Analytical first estimate (unclipped) ───────────────────
+                # A_total = sum(alpha_i) * P  =>  P = required / sum(alpha_i)
+                P = required_abatement / self.agents['alpha'].sum()
+
+                # ── Iterative refinement to account for 90 % abatement cap ─
+                # When some agents are capped, their marginal abatement no
+                # longer responds to price; the uncapped agents must work
+                # harder, raising the equilibrium price.
+                for _ in range(20):          # converges in < 5 iterations
+                    abate = np.clip(
+                        self.agents['alpha'] * P,
+                        0,
+                        self.agents['baseline_emissions'] * 0.9,
+                    )
+                    gap = required_abatement - abate.sum()
+                    if abs(gap) < 1e-3:      # tCO₂ tolerance
+                        break
+                    # Uncapped agents still have residual alpha response
+                    uncapped_mask = (
+                        self.agents['alpha'] * P
+                        < self.agents['baseline_emissions'] * 0.9
+                    )
+                    residual_alpha = self.agents.loc[uncapped_mask, 'alpha'].sum()
+                    if residual_alpha < 1e-9:
+                        break               # everyone is capped — can't do more
+                    P += gap / residual_alpha
+                    P = max(P, 0.0)
+
+            # Apply regulatory price bounds
             if price_floor is not None:
-                P = max(P, price_floor)
+                P = max(P, float(price_floor))
             if price_ceiling is not None:
-                P = min(P, price_ceiling)
-                
+                P = min(P, float(price_ceiling))
+
         self.market_price = P
-        
-        # Calculate final emissions based on price
-        # Abatement cannot exceed baseline 
-        self.agents['abatement'] = np.clip(self.agents['alpha'] * P, 0, self.agents['baseline_emissions'] * 0.9)
-        self.agents['final_emissions'] = self.agents['baseline_emissions'] - self.agents['abatement']
+
+        # ── Final emissions ──────────────────────────────────────────────────
+        # Abatement is capped at 90 % of baseline (technological upper bound)
+        self.agents['abatement'] = np.clip(
+            self.agents['alpha'] * P,
+            0,
+            self.agents['baseline_emissions'] * 0.9,
+        )
+        self.agents['final_emissions'] = (
+            self.agents['baseline_emissions'] - self.agents['abatement']
+        )
         self.total_emissions = self.agents['final_emissions'].sum()
         
         # Calculate financial outcomes

@@ -22,7 +22,9 @@ def analyze_results(model, scenario_name="Baseline"):
     df = model.agents
     
     pre_income = df['income'].values
-    post_income = pre_income - df['total_policy_cost'].values
+    # Clip to zero: a household cannot have negative post-policy income in this
+    # model; very large costs are capped at full income loss for Gini purposes.
+    post_income = np.maximum(pre_income - df['total_policy_cost'].values, 0.0)
     
     gini_pre = calculate_gini(pre_income)
     gini_post = calculate_gini(post_income)
@@ -32,12 +34,16 @@ def analyze_results(model, scenario_name="Baseline"):
     emissions_reduction = total_baseline_emissions - total_final_emissions
     reduction_pct = (emissions_reduction / total_baseline_emissions) * 100
     
-    avg_price = model.market_price
+    # Net buyers / sellers
+    net_buyers  = int((df['net_allowances'] < 0).sum()) if 'net_allowances' in df.columns else len(df)
+    net_sellers = int((df['net_allowances'] > 0).sum()) if 'net_allowances' in df.columns else 0
     
-    net_buyers = len(df[df['net_allowances'] < 0]) if 'net_allowances' in df else len(df)
-    net_sellers = len(df[df['net_allowances'] > 0]) if 'net_allowances' in df else 0
-    
+    # Total welfare cost = sum of all abatement costs net of trading gains.
+    # In a perfectly clearing market this equals aggregate abatement cost only
+    # (transfers between buyers and sellers cancel out).
     total_welfare_cost = df['total_policy_cost'].sum()
+    
+    avg_price = model.market_price
     
     # Calculate impact by quintile
     impact_by_quintile = df.groupby('quintile')['income_burden_pct'].mean().to_dict()
