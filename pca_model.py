@@ -126,9 +126,9 @@ class PCASimulation:
         
         # Calculate financial outcomes
         if carbon_tax is not None:
-            # Under carbon tax, they pay for all their emissions
-            self.agents['net_allowancies'] = -self.agents['final_emissions']
-            self.agents['financial_impact'] = self.agents['net_allowancies'] * P # Negative means cost
+            # Under carbon tax, they pay per tonne of final emissions (no trading)
+            self.agents['net_allowances'] = -self.agents['final_emissions']  # Always a net buyer
+            self.agents['financial_impact'] = self.agents['net_allowances'] * P  # All negative (cost)
             self.agents['allocation'] = 0
             self.agents['buyer'] = True
             self.agents['seller'] = False
