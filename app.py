@@ -368,13 +368,13 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
                     )
                 )
             fig_mac.update_layout(
-                title=dict(text="Carbon Market: Demand vs Fixed Supply", font=dict(size=18, color="#f8fafc")),
+                title=dict(text="Carbon Market: Demand vs Fixed Supply", font=dict(size=16, color="#f8fafc")),
                 xaxis_title="Total Emissions / Allowances Demanded (tCO₂)",
                 yaxis_title="Carbon Price (€/tCO₂)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f8fafc")),
-                margin=dict(t=60, b=20),
+                legend=dict(orientation="h", yanchor="bottom", y=1.05, font=dict(color="#f8fafc")),
+                margin=dict(t=80, b=20),
                 font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
                 xaxis=dict(gridcolor="rgba(255,255,255,0.05)", zeroline=False),
                 yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
@@ -408,7 +408,6 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
                 "quintile_label": QUINTILE_ORDER,
                 "Stage": ["📊 Pre-Policy (Baseline)", "✅ Post-Policy (Final)"],
             },
-            title="Emissions Spread by Income Quintile",
             labels={"quintile_label": "Income Quintile"},
             color_discrete_map={
                 "📊 Pre-Policy (Baseline)": "#f87171",
@@ -418,12 +417,12 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
         fig_box.update_layout(
             plot_bgcolor="rgba(0,0,0,0)", 
             paper_bgcolor="rgba(0,0,0,0)",
-            margin=dict(t=40, b=20),
+            margin=dict(t=20, b=20),
             font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
             xaxis=dict(showgrid=False, tickfont=dict(weight="bold", color="#f8fafc")),
             yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
             hoverlabel=dict(bgcolor="#0f172a", font_size=14, font_family="Inter"),
-            legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f8fafc"))
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f8fafc"), title="")
         )
         st.plotly_chart(fig_box, use_container_width=True)
 
