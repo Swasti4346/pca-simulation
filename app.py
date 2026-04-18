@@ -6,12 +6,68 @@ import plotly.graph_objects as go
 from pca_model import PCASimulation
 from analysis import analyze_results
 
-st.set_page_config(page_title="PCA Simulation Dashboard", layout="wide")
+st.set_page_config(page_title="PCA Simulation Dashboard", layout="wide", initial_sidebar_state="expanded")
+
+# ── PREMIUM UI CUSTOM STYLING ──
+st.markdown("""
+<style>
+/* Modern typography and styling */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+}
+
+/* Elevate Metric Cards */
+div[data-testid="stMetricValue"] {
+    font-size: 2.2rem !important;
+    font-weight: 800 !important;
+    color: #10b981 !important;
+}
+div[data-testid="stMetricLabel"] {
+    font-size: 1.05rem !important;
+    font-weight: 600 !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+div[data-testid="stMetricDelta"] {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+}
+
+/* Beautiful Info Boxes */
+div.stAlert {
+    background-color: rgba(56, 189, 248, 0.05) !important;
+    border: 1px solid rgba(56, 189, 248, 0.2) !important;
+    border-radius: 8px !important;
+}
+
+/* Header Adjustments */
+h1 {
+    font-weight: 900 !important;
+    background: -webkit-linear-gradient(45deg, #34d399, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding-bottom: 0.5rem;
+}
+h2, h3 {
+    font-weight: 700 !important;
+    color: #f8fafc !important;
+    margin-top: 1.5rem !important;
+}
+hr {
+    border-color: rgba(255,255,255,0.1) !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
 st.title("🌍 Personal Carbon Allowance (PCA) Interactive Simulation")
 st.markdown(
-    "Model the **economic and distributional impacts** of a Personal Carbon Allowance "
-    "system for Irish households. Adjust the parameters and run the simulation to explore outcomes."
+    "<p style='font-size: 1.15rem; color: #cbd5e1; margin-bottom: 2rem;'>"
+    "Model the <b>economic and distributional impacts</b> of a Personal Carbon Allowance "
+    "system for Irish households. Adjust the parameters and run the simulation to explore outcomes.</p>",
+    unsafe_allow_html=True
 )
 
 # ─────────────────────────── SIDEBAR ───────────────────────────
@@ -171,7 +227,11 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
             coloraxis_showscale=True,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
-            margin=dict(t=80),
+            margin=dict(t=80, b=20),
+            font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
+            xaxis=dict(showgrid=False, tickfont=dict(weight="bold", color="#f8fafc")),
+            yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zerolinecolor="rgba(255,255,255,0.2)"),
+            hoverlabel=dict(bgcolor="#0f172a", font_size=14, font_family="Inter")
         )
         st.plotly_chart(fig_burden, use_container_width=True)
 
@@ -207,8 +267,15 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
         fig_transfer.update_traces(texttemplate="€%{text:,.0f}", textposition="outside")
         fig_transfer.add_hline(y=0, line_dash="dash", line_color="white", line_width=1)
         fig_transfer.update_layout(
+            xaxis_title="Income Quintile",
+            yaxis_title="Average Net Policy Cost (€ / household)",
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
+            margin=dict(t=40, b=20),
+            font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
+            xaxis=dict(showgrid=False, tickfont=dict(weight="bold", color="#f8fafc")),
+            yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zerolinecolor="rgba(255,255,255,0.2)"),
+            hoverlabel=dict(bgcolor="#0f172a", font_size=14, font_family="Inter")
         )
         st.plotly_chart(fig_transfer, use_container_width=True)
 
@@ -243,7 +310,18 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
                         "🔴 Buyer (Deficit — must purchase)": "#ef4444",
                     },
                 )
-                fig_pie.update_traces(textposition="inside", textinfo="percent+label")
+                fig_pie.update_traces(
+                    textposition="inside", 
+                    textinfo="percent+label",
+                    marker=dict(line=dict(color='#0f172a', width=2)),
+                    pull=[0.05, 0]
+                )
+                fig_pie.update_layout(
+                    font=dict(family="Inter, sans-serif", size=13, color="#f8fafc"),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    margin=dict(t=50, b=20),
+                )
                 st.plotly_chart(fig_pie, use_container_width=True)
 
         with colB:
@@ -290,12 +368,17 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
                     )
                 )
             fig_mac.update_layout(
-                title="Carbon Market: Demand vs Fixed Supply",
+                title=dict(text="Carbon Market: Demand vs Fixed Supply", font=dict(size=18, color="#f8fafc")),
                 xaxis_title="Total Emissions / Allowances Demanded (tCO₂)",
                 yaxis_title="Carbon Price (€/tCO₂)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 paper_bgcolor="rgba(0,0,0,0)",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f8fafc")),
+                margin=dict(t=60, b=20),
+                font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
+                xaxis=dict(gridcolor="rgba(255,255,255,0.05)", zeroline=False),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
+                hoverlabel=dict(bgcolor="#0f172a", font_size=14, font_family="Inter")
             )
             st.plotly_chart(fig_mac, use_container_width=True)
 
@@ -332,7 +415,16 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
                 "✅ Post-Policy (Final)": "#34d399",
             },
         )
-        fig_box.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)")
+        fig_box.update_layout(
+            plot_bgcolor="rgba(0,0,0,0)", 
+            paper_bgcolor="rgba(0,0,0,0)",
+            margin=dict(t=40, b=20),
+            font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
+            xaxis=dict(showgrid=False, tickfont=dict(weight="bold", color="#f8fafc")),
+            yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
+            hoverlabel=dict(bgcolor="#0f172a", font_size=14, font_family="Inter"),
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, font=dict(color="#f8fafc"))
+        )
         st.plotly_chart(fig_box, use_container_width=True)
 
         # ═══════════════════════════════════════════════════════════
@@ -365,6 +457,11 @@ if st.sidebar.button("▶ Run Simulation", type="primary"):
             showlegend=False,
             plot_bgcolor="rgba(0,0,0,0)",
             paper_bgcolor="rgba(0,0,0,0)",
+            margin=dict(t=40, b=20),
+            font=dict(family="Inter, sans-serif", size=13, color="#94a3b8"),
+            xaxis=dict(showgrid=False, tickfont=dict(weight="bold", color="#f8fafc")),
+            yaxis=dict(gridcolor="rgba(255,255,255,0.08)", zeroline=False),
+            hoverlabel=dict(bgcolor="#0f172a", font_size=14, font_family="Inter")
         )
         st.plotly_chart(fig_gini, use_container_width=True)
 
